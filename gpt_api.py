@@ -1,78 +1,100 @@
+# -*- coding: utf-8 -*-
+import os
+import openai
 import requests
+import logging
 from config import GPT_API_KEY
-
-API_URL = "https://api.openai.com/v1/engines/text-davinci-003/completions"
-
-def generate_response(prompt, max_tokens=100):
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {GPT_API_KEY}",
-    }
-
-    data = {
-        "prompt": prompt,
-        "max_tokens": max_tokens,
-        "temperature": 0.7,
-        "top_p": 1,
-        "frequency_penalty": 0,
-        "presence_penalty": 0,
-    }
-
-    try:
-        response = requests.post(API_URL, headers=headers, json=data)
-        response.raise_for_status()
-        result = response.json()
-        return result["choices"][0]["text"].strip()
-    except Exception as e:
-        print(f"Error generating response: {str(e)}")
-        return None
-
-# webhook.py
-
-from flask import Flask, request, jsonify
+import ast
 import json
-from gpt_api import generate_response
 
-app = Flask(__name__)
+API_URL = "https://api.openai.com/v1/completions"
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.get_json()
-    user_id = data["user_id"]
-    message = data["message"]
-    
-    response_text = generate_response(message)
-    
-    if response_text:
-        response_content = {
-            "content": {
-                "actions": [],
-                "messages": [
-                    {
-                        "type": "text",
-                        "text": response_text
-                    }
-                ],
-                "quick_replies": []
-            },
-            "version": "v2"
-        }
-    else:
-        response_content = {
-            "content": {
-                "actions": [],
-                "messages": [
-                    {
-                        "type": "text",
-                        "text": "Извините, я не смог обработать ваш запрос. Пожалуйста, попробуйте снова."
-                    }
-                ],
-                "quick_replies": []
-            },
-            "version": "v2"
-        }
+openai.api_key = GPT_API_KEY
 
-    return jsonify(response_content)
+def generate_response(prompt, max_tokens=50, temperature=1.0, top_p=1, n=1):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=max_tokens,
+        n=n,
+        stop=None,
+        temperature=temperature,
+        top_p=top_p,
+    )
 
-if __name__ == '__main__':
-    app.run()
+    generated_text = response.choices[0].text.strip()
+    return generated_text
+
+def generate_analyze_horoscope_response(problem, horoscope_text):
+    prompt = f"Проанализируйте гороскоп пользователя: {horoscope_text}. Ответьте на вопрос пользователя: {problem}."
+    response_text = generate_response(prompt)
+    return response_text
+
+
+def generate_response_with_variables(prompt_template, max_tokens=500, temperature=0.7, top_p=1, n=1, presence_penalty=0.6, **kwargs):
+    prompt = prompt_template.format(**kwargs)
+    start_sequence = "\nAI:"
+    restart_sequence = "\nHuman: "
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt,
+        max_tokens=max_tokens,
+        n=n,
+        stop=[" Human:", " AI:"],
+        temperature=temperature,
+        top_p=top_p,
+        frequency_penalty=0,
+        presence_penalty=presence_penalty,
+
+    )
+
+    generated_text = response.choices[0].text.strip()
+    print("API Response:", response.choices[0].text)
+    return generated_text
+
+
+def generate_response_with_variables_turbo(prompt_template, system_role="You are a helpful assistant.", max_tokens=150, temperature=0.7, top_p=1, n=1, presence_penalty=0.6, **kwargs):
+    prompt = prompt_template.format(**kwargs)
+    user_message = {"role": "assistant", "content": prompt}
+    system_message = {"role": "system", "content": system_role}
+    messages = [system_message, user_message]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+        n=n,
+        stop=[""],
+        temperature=temperature,
+        top_p=top_p,
+        frequency_penalty=0,
+        presence_penalty=presence_penalty,
+        max_tokens=max_tokens
+    )
+
+    generated_text = response.choices[0].message['content'].strip()
+    print("API Response:", response.choices[0].message['content'])
+    return generated_text
+
+
+def generate_response_with_variables_gpt4(prompt_template, system_role="You are a helpful assistant.", max_tokens=150, temperature=0.7, top_p=1, n=1, presence_penalty=0.6, **kwargs):
+    prompt = prompt_template.format(**kwargs)
+    user_message = {"role": "assistant", "content": prompt}
+    system_message = {"role": "system", "content": system_role}
+    messages = [system_message, user_message]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-0314",
+        messages=messages,
+        n=n,
+        stop=[" Human:", " AI:"],
+        temperature=temperature,
+        top_p=top_p,
+        frequency_penalty=0,
+        presence_penalty=presence_penalty,
+        max_tokens=max_tokens
+    )
+
+    generated_text = response.choices[0].message['content'].strip()
+    print("API Response:", response.choices[0].message['content'])
+    return generated_text
+
