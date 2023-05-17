@@ -6,7 +6,7 @@ import logging
 import numpy
 import time
 import simplejson as json
-from manychat_api import set_custom_field, get_user_info
+from manychat_api import set_custom_field, get_user_info, add_tag, remove_tag
 from gpt_api import generate_response_with_variables, generate_response_with_variables_turbo, generate_response_with_variables_gpt4
 from crm_integration import send_order_to_crm
 from config_fit_ro_mess import (
@@ -70,15 +70,22 @@ def handle_birth_date(user_id, birth_date):
 def handle_age_w_h(user_id, age_w_h):
     logging.info(f"Received data: {age_w_h}")
     upsert_lead(user_id, age_w_h=age_w_h)
+    add_tag (user_id, tag_name="age_w_h")
 
 def handle_food_blood(user_id, food_blood):
     upsert_lead(user_id, food_blood=food_blood)
+    remove_tag (user_id, tag_name="age_w_h")
+    add_tag (user_id, tag_name="food_blood")
 
 def handle_lose_a_term(user_id, lose_a_term):
     upsert_lead(user_id, lose_a_term=lose_a_term)
+    remove_tag (user_id, tag_name="food_blood")
+    add_tag (user_id, tag_name="lose_a_term")
 
 def handle_activity_day(user_id, activity_day):
     upsert_lead(user_id, activity_day=activity_day)
+    remove_tag (user_id, tag_name="lose_a_term")
+    add_tag (user_id, tag_name="activity_day")
 
 def handle_profile_fit(user_id, age_w_h, food_blood, lose_a_term, activity_day, first_name, gender):
     response = generate_response_with_variables_gpt4(PROFILE_FIT, ROLE_PROFILE_FIT, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender)

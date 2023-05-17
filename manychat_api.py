@@ -102,6 +102,55 @@ def set_custom_field(user_id, field_id, field_value):
 
     return response.json()
 
+def add_tag(user_id, tag_name):
+    url = f"{MANICHAT_API_URL}/subscriber/addTagByName"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {MANICHAT_API_KEY}"}
+    payload = {
+        "subscriber_id": user_id,
+        "tag_name": tag_name
+    }
+
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount('https://', adapter)
+    session.mount('http://', adapter)
+
+    try:
+        response = session.post(url, json=data, headers=headers, timeout=REQUEST_TIMEOUT, allow_redirects=False)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error setting custom field: {e}")
+        print(f"Status code: {response.status_code}")  
+        print(f"Response content: {response.content.decode('utf-8')}") 
+        return None
+
+    return response.json()
+
+def remove_tag(user_id, tag_name):
+    url = f"{MANICHAT_API_URL}/subscriber/removeTagByName"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {MANICHAT_API_KEY}"}
+    payload = {
+        "subscriber_id": user_id,
+        "tag_name": tag_name
+    }
+
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount('https://', adapter)
+    session.mount('http://', adapter)
+
+    try:
+        response = session.post(url, json=data, headers=headers, timeout=REQUEST_TIMEOUT, allow_redirects=False)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"Error setting custom field: {e}")
+        print(f"Status code: {response.status_code}")  
+        print(f"Response content: {response.content.decode('utf-8')}") 
+        return None
+
+    return response.json()
 
 
 def send_whatsapp(user_id, text, tag=None, tag_remove=None, callback_url=None, callback_timeout=None):
