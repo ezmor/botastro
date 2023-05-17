@@ -1,9 +1,9 @@
 # config.py
 
 # API ключи
-MANICHAT_API_KEY = "637895:f7f93016a4e3b843227b1ee2ed17b788"
-MANICHAT_API_KEY_WHATSAPP = "637895:f7f93016a4e3b843227b1ee2ed17b788"
-GPT_API_KEY = "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"
+MANICHAT_API_KEY = ""
+MANICHAT_API_KEY_WHATSAPP = ""
+GPT_API_KEY = ""
 
 # URL для отправки данных клиента в CRM
 CRM_POST_URL = "https://your_crm_url.com/api/create_order"
