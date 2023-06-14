@@ -89,14 +89,14 @@ def handle_activity_day(user_id, activity_day):
 
 def handle_profile_fit(user_id, age_w_h, food_blood, lose_a_term, activity_day, first_name, gender):
     response = generate_response_with_variables_gpt4(PROFILE_FIT, ROLE_PROFILE_FIT, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender)
-    set_custom_field(user_id, "9313462", f'"{response}"')
+    set_custom_field(user_id, "9313462", f'{response}')
     logging.error(f"Response: {response}")
     return response
 
 
 def handle_offer(user_id, age_w_h, food_blood, lose_a_term, activity_day, first_name, gender):
     response = generate_response_with_variables_gpt4(OFFER, ROLE_OFFER, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender)
-    set_custom_field(user_id, "9313459", f'"{response}"')
+    set_custom_field(user_id, "9313459", f'{response}')
     upsert_lead(user_id, answer_a=response)
     return response
 
@@ -106,26 +106,32 @@ def handle_answer_question(user_id, message, age_w_h, food_blood, lose_a_term, a
     upsert_lead(user_id, tone_message=response_analys)
     if 'заинтересованность' in response_analys:
         response = generate_response_with_variables_gpt4(ANSWER_INTEREST, ROLE_ANSWER_INTEREST, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender, answer_a=answer_a, answer_u=message)
-        set_custom_field(user_id, "9313460", f'"{response}"')
+        set_custom_field(user_id, "9313460", f'{response}')
+        remove_tag_by_name (user_id, tag_name="activity_day")
+        add_tag_by_name (user_id, tag_name="handle_answer_question")
         return response
         pass
     elif 'сомнения' in response_analys:
         response = generate_response_with_variables_gpt4(ANSWER_DOUBTS, ROLE_ANSWER_DOUBTS, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender, answer_a=answer_a, answer_u=message)
-        set_custom_field(user_id, "9313460", f'"{response}"')
+        set_custom_field(user_id, "9313460", f'{response}')
+        remove_tag_by_name (user_id, tag_name="activity_day")
+        add_tag_by_name (user_id, tag_name="handle_answer_question")
         return response
         pass
     elif 'негативный' in response_analys:
         response = generate_response_with_variables_gpt4(ANSWER_NEGATIVE, ROLE_ANSWER_NEGATIVE, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender, answer_a=answer_a, answer_u=message)
-        set_custom_field(user_id, "9313460", f'"{response}"')
+        set_custom_field(user_id, "9313460", f'{response}')
+        remove_tag_by_name (user_id, tag_name="activity_day")
+        add_tag_by_name (user_id, tag_name="handle_answer_question")
         return response
         pass
     elif 'другие вопросы' in response_analys:
         response = generate_response_with_variables_gpt4(ANSWER_OTHER, ROLE_ANSWER_OTHER, max_tokens=1500, temperature=0.9, top_p=0.7, age_w_h=age_w_h, food_blood=food_blood, lose_a_term=lose_a_term, activity_day=activity_day, first_name=first_name, gender=gender, answer_a=answer_a, answer_u=message)
-        set_custom_field(user_id, "9313460", f'"{response}"')
+        set_custom_field(user_id, "9313460", f'{response}')
+        remove_tag_by_name (user_id, tag_name="activity_day")
+        add_tag_by_name (user_id, tag_name="handle_answer_question")
         return response
         pass
-    remove_tag_by_name (user_id, tag_name="activity_day")
-    add_tag_by_name (user_id, tag_name="handle_answer_question")
 
 
 def is_valid_phone_number(phone, default_region="UA"):

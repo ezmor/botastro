@@ -78,6 +78,31 @@ def fit_ro_message_endpoint():
     return jsonify({"version":"v2","content":{"messages":[{"type":"text","text":response}]}})
 
 
+@app.route('/fit_ro_telegram', methods=['POST'])
+def fit_ro_telegram_endpoint():
+    data = request.get_json()
+    user_id = data['user_id']
+    message = data.get('message', '')  # Используйте метод get() для получения сообщения. Если сообщение отсутствует, используйте '' как значение по умолчанию.
+
+    if message.strip():
+        database_utils_fit_ro_mess.add_message(user_id, 'user', message)
+
+    tag = get_tag(data)
+    response = dsfrm.fit_ro_message(user_id, message, tag)
+
+    if response is None:
+        response = ""
+
+    logging.debug(f"Calling add_message: user_id={user_id}, role='assistant', content={response}")
+    database_utils_fit_ro_mess.add_message(user_id, 'assistant', response)
+
+    return jsonify({"version": "v2", "content": {"messages": [{"type": "text", "text": response}]}})
+
+
+
+
+
+
 def get_tag(data):
     return data.get('tag', 'unknown')
 
